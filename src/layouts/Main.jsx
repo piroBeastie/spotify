@@ -1,0 +1,50 @@
+function Main(){
+    return(
+        <>
+            <div className="mainDiv w-[80%] text-white bg-black relative mt-[8vh] ml-[20%]">
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+                <p>hello</p>
+            </div>
+        </>
+    )
+}
+
+export default Main;
