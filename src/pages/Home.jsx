@@ -1,71 +1,87 @@
 import { useState, useEffect } from 'react';
-import TrackCard from '../components/shared/TrackCard';
+import TrackCard from '../components/TrackCard';
+import { spotifyService } from '../services/spotifyService';
 
-function Home() {
-  const [featuredTracks, setFeaturedTracks] = useState([]);
+export default function Home() {
+  const [newReleases, setNewReleases] = useState([]);
+  const [featuredPlaylists, setFeaturedPlaylists] = useState([]);
+  const [topArtists, setTopArtists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simulated API call - replace with actual API integration
-    const fetchFeaturedTracks = async () => {
+    const fetchData = async () => {
       try {
-        // Simulated data - replace with actual API call
-        const response = await new Promise(resolve => setTimeout(() => {
-          resolve({
-            tracks: [
-              {
-                id: '1',
-                title: 'Blinding Lights',
-                artist: 'The Weeknd',
-                albumArt: 'https://picsum.photos/300/300?random=10',
-              },
-              {
-                id: '2',
-                title: 'Stay',
-                artist: 'Kid LAROI & Justin Bieber',
-                albumArt: 'https://picsum.photos/300/300?random=11',
-              },
-              {
-                id: '3',
-                title: 'Heat Waves',
-                artist: 'Glass Animals',
-                albumArt: 'https://picsum.photos/300/300?random=12',
-              },
-              // Add more tracks as needed
-            ]
-          });
-        }, 1000));
-
-        setFeaturedTracks(response.tracks);
+        setLoading(true);
+        const [releases, playlists, artists] = await Promise.all([
+          spotifyService.getNewReleases(),
+          spotifyService.getFeaturedPlaylists(),
+          spotifyService.getTopArtists()
+        ]);
+        setNewReleases(releases);
+        setFeaturedPlaylists(playlists);
+        setTopArtists(artists);
       } catch (error) {
-        console.error('Error fetching featured tracks:', error);
+        console.error('Error fetching data:', error);
+        setError('Failed to load data. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchFeaturedTracks();
+    fetchData();
   }, []);
 
-  return (
-    <div className="space-y-8">
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Featured Tracks</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {featuredTracks.map(track => (
-            <TrackCard key={track.id} track={track} />
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500 text-center">
+          <h2 className="text-2xl font-bold mb-2">Error</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const renderSection = (title, items, type) => {
+    // Filter out any null or undefined items
+    const validItems = items.filter(item => item !== null && item !== undefined);
+    
+    return (
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold text-white mb-6">{title}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {validItems.map((item) => (
+            <TrackCard
+              key={item.id}
+              id={item.id}
+              title={item.name}
+              artist={type === 'artist' 
+                ? item.genres?.join(', ') || 'Unknown Genre'
+                : item.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist'}
+              coverUrl={type === 'artist' 
+                ? item.images?.[0]?.url 
+                : item.album?.images?.[0]?.url || item.images?.[0]?.url}
+            />
           ))}
         </div>
-      </section>
+      </div>
+    );
+  };
 
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Welcome to SpotifyIMDB</h2>
-        <div className="bg-gray-800 p-6 rounded-lg">
-          <p className="text-gray-300">
-            Discover trending playlists, explore new music, and keep track of your favorite songs.
-            Use the navigation above to browse different sections of the app.
-          </p>
-        </div>
-      </section>
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {renderSection('New Releases', newReleases, 'album')}
+      {renderSection('Featured Playlists', featuredPlaylists, 'playlist')}
+      {renderSection('Top Artists', topArtists, 'artist')}
     </div>
   );
-}
-
-export default Home; 
+} 

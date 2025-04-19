@@ -4,10 +4,8 @@ function Navbar() {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', label: 'Home' },
-    { path: '/trending', label: 'Trending' },
-    { path: '/playlists', label: 'Playlists' },
-    { path: '/liked', label: 'Liked Songs' },
+    { path: '/', label: 'New Releases' },
+    { path: '/search', label: 'Search' }
   ];
 
   return (

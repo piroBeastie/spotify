@@ -8,5 +8,13 @@ export default defineConfig({
     alias: {
       '@': '/src'
     }
-  }
+  },
+  css: {
+    postcss: {
+      plugins: [
+        require('tailwindcss'),
+        require('autoprefixer'),
+      ],
+    },
+  },
 })
