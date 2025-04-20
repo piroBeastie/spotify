@@ -9,77 +9,29 @@ const FALLBACK_IMAGES = {
   track: 'https://via.placeholder.com/300/121212/FFFFFF?text=Track'
 };
 
-const RATE_LIMIT = {
-  maxRetries: 3,
-  retryDelay: 2000, 
-  maxRequestsPerMinute: 30
-};
-
-let requestCount = 0;
-let lastResetTime = Date.now();
-
-const handleRateLimit = async () => {
-  const now = Date.now();
-  const timeSinceLastReset = now - lastResetTime;
-  
-  if (timeSinceLastReset > 60000) {
-    requestCount = 0;
-    lastResetTime = now;
-  }
-
-  if (requestCount >= RATE_LIMIT.maxRequestsPerMinute) {
-    const waitTime = 60000 - timeSinceLastReset;
-    console.log(`Rate limit reached. Waiting ${waitTime}ms before next request.`);
-    await new Promise(resolve => setTimeout(resolve, waitTime));
-    requestCount = 0;
-    lastResetTime = Date.now();
-  }
-  
-  requestCount++;
-};
-
 export const spotifyService = {
   async fetchWebApi(endpoint, method = 'GET', body = null) {
-    await handleRateLimit();
-    
-    let retries = 0;
-    while (retries < RATE_LIMIT.maxRetries) {
-      try {
-        const res = await fetch(`${SPOTIFY_API_BASE}/${endpoint}`, {
-          headers: {
-            Authorization: `Bearer ${config.SPOTIFY_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          method,
-          body: body ? JSON.stringify(body) : null,
-        });
+    try {
+      const res = await fetch(`${SPOTIFY_API_BASE}/${endpoint}`, {
+        headers: {
+          Authorization: `Bearer ${config.SPOTIFY_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        method,
+        body: body ? JSON.stringify(body) : null,
+      });
 
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error('Authentication failed. Please check your Spotify API key.');
-          }
-          if (res.status === 429) {
-            const retryAfter = parseInt(res.headers.get('Retry-After') || '5');
-            console.log(`Rate limit exceeded. Retrying after ${retryAfter} seconds.`);
-            await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-            retries++;
-            continue;
-          }
-          throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('Authentication failed. Please check your Spotify API key.');
         }
-
-        return await res.json();
-      } catch (error) {
-        console.error(`Error fetching ${endpoint}:`, error);
-        retries++;
-        
-        if (retries < RATE_LIMIT.maxRetries) {
-          console.log(`Retrying (${retries}/${RATE_LIMIT.maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, RATE_LIMIT.retryDelay));
-        } else {
-          throw error;
-        }
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
+
+      return await res.json();
+    } catch (error) {
+      console.error(`Error fetching ${endpoint}:`, error);
+      throw error;
     }
   },
 
