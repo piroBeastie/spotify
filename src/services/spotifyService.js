@@ -150,5 +150,34 @@ export const spotifyService = {
       console.error('Error fetching playlist details:', error);
       return null;
     }
+  },
+
+  async searchTracks(query, limit = 20) {
+    try {
+      const response = await this.fetchWebApi(
+        `search?q=${encodeURIComponent(query)}&type=track&limit=${limit}`
+      );
+      
+      if (!response?.tracks?.items) {
+        console.error('Invalid response format for search:', response);
+        return [];
+      }
+      
+      return response.tracks.items.map(track => ({
+        id: track.id,
+        name: track.name,
+        artists: track.artists,
+        album: {
+          id: track.album.id,
+          name: track.album.name,
+          images: track.album.images && track.album.images.length > 0 
+            ? track.album.images 
+            : [{ url: FALLBACK_IMAGES.album }]
+        }
+      }));
+    } catch (error) {
+      console.error('Error searching tracks:', error);
+      return [];
+    }
   }
 }; 

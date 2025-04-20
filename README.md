@@ -1,36 +1,31 @@
-# SpotifyIMDB
+# Spotify Clone
 
-A modern web application that combines the music discovery features of Spotify with the rating and trending features of IMDB. Built with React and Tailwind CSS.
+Hey there! This is my Spotify clone project that I built for my web development class. It's basically a simplified version of Spotify that lets you browse playlists, artists, and new releases. I had a lot of fun building this and learned a ton about React and API integration!
 
-## Features
+## What It Does
 
-- **Home Page**: Discover featured tracks and new releases
-- **Trending**: View popular tracks with filtering by time range (week/month/year)
-- **Playlists**: Browse and manage your music playlists
-- **Liked Songs**: Keep track of your favorite music in one place
-- **Responsive Design**: Fully responsive layout that works on mobile and desktop
-- **Modern UI**: Beautiful and intuitive user interface with smooth transitions
+- **Home Page**: Shows you new releases and featured playlists
+- **Search**: Find music, artists, and playlists
+- **Artist Details**: Check out artist info and their popular tracks
+- **Playlist Details**: See what songs are in a playlist
+- **Responsive Design**: Works on my phone and laptop (which is all I care about tbh)
 
-## Tech Stack
+## Tech Stuff I Used
 
-- **Frontend Framework**: React.js (Functional Components + Hooks)
-- **Routing**: React Router v6
-- **State Management**: React Context API
-- **Styling**: Tailwind CSS
-- **Icons**: Heroicons
-- **HTTP Client**: Axios
-- **Notifications**: React Hot Toast
-- **Build Tool**: Vite
+- **React**: For building the UI (functional components + hooks)
+- **React Router**: For navigation between pages
+- **Tailwind CSS**: For styling (way easier than writing CSS from scratch)
+- **Spotify API**: To get real music data (had to get an API key which was a pain)
 
-## Getting Started
+## How to Run It
 
-1. Clone the repository:
+1. Clone this repo:
    ```bash
-   git clone https://github.com/yourusername/spotify-imdb.git
-   cd spotify-imdb
+   git clone https://github.com/yourusername/spotify-clone.git
+   cd spotify-clone
    ```
 
-2. Install dependencies:
+2. Install the dependencies:
    ```bash
    npm install
    ```
@@ -45,20 +40,24 @@ A modern web application that combines the music discovery features of Spotify w
 ## Project Structure
 
 ```
-spotify-imdb/
+spotify-clone/
 ├── src/
 │   ├── components/
 │   │   ├── layout/
 │   │   │   └── Navbar.jsx
-│   │   └── shared/
-│   │       └── TrackCard.jsx
-│   ├── context/
-│   │   └── SpotifyContext.jsx
+│   │   ├── ArtistDetails.jsx
+│   │   ├── PlaylistDetails.jsx
+│   │   ├── TrackCard.jsx
+│   │   ├── Home.jsx
+│   │   ├── Home.css
+│   │   ├── ArtistDetails.css
+│   │   └── PlaylistDetails.css
 │   ├── pages/
 │   │   ├── Home.jsx
-│   │   ├── Trending.jsx
-│   │   ├── Playlists.jsx
-│   │   └── LikedSongs.jsx
+│   │   └── Search.jsx
+│   ├── services/
+│   │   └── spotifyService.js
+│   ├── config.js
 │   ├── App.jsx
 │   └── main.jsx
 ├── public/
@@ -66,28 +65,32 @@ spotify-imdb/
 └── package.json
 ```
 
-## Available Scripts
+## What I Learned
 
-- `npm run dev` - Starts the development server
-- `npm run build` - Builds the app for production
-- `npm run preview` - Preview the production build locally
-- `npm run lint` - Run ESLint to check code quality
+- How to use React hooks (useState, useEffect)
+- How to fetch data from an API
+- How to handle loading states and errors
+- How to use React Router for navigation
+- How to style with Tailwind CSS
 
-## Contributing
+## Known Issues
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- The API key expires after a while, so you'll need to update it in config.js
+- Some images might not load (I'm using placeholder images as fallbacks)
+- The app doesn't actually play music (that would require more API permissions)
 
-## License
+## Future Improvements
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Add user authentication
+- Add a music player
+- Add more pages and features
+- Improve the UI/UX
 
-## Acknowledgments
+## Credits
 
 - [React](https://reactjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Heroicons](https://heroicons.com/)
+- [Spotify API](https://developer.spotify.com/documentation/web-api/)
 - [Vite](https://vitejs.dev/)
+
+Feel free to use this code for your own projects or assignments (just give me credit if you do 😉).
