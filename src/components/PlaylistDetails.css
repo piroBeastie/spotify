@@ -1,0 +1,160 @@
+.playlist-details-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.back-button:hover {
+  color: #1db954;
+}
+
+.playlist-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.playlist-image {
+  width: 200px;
+  height: 200px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-right: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.playlist-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-info h1 {
+  font-size: 48px;
+  margin: 0 0 10px 0;
+  color: #fff;
+}
+
+.playlist-description {
+  font-size: 16px;
+  color: #b3b3b3;
+  margin-bottom: 10px;
+}
+
+.playlist-owner {
+  font-size: 14px;
+  color: #b3b3b3;
+}
+
+.tracks-section {
+  margin-top: 30px;
+}
+
+.tracks-section h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.tracks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.track-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #282828;
+  transition: background-color 0.2s;
+}
+
+.track-item:hover {
+  background-color: #282828;
+}
+
+.track-number {
+  width: 40px;
+  color: #b3b3b3;
+  font-size: 16px;
+  text-align: center;
+}
+
+.track-info {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  align-items: center;
+}
+
+.track-name {
+  color: #fff;
+  font-size: 16px;
+  flex: 1;
+}
+
+.track-artist {
+  color: #b3b3b3;
+  font-size: 14px;
+  margin: 0 20px;
+}
+
+.track-duration {
+  color: #b3b3b3;
+  font-size: 14px;
+  min-width: 60px;
+  text-align: right;
+}
+
+.loading, .error, .no-tracks {
+  text-align: center;
+  padding: 50px;
+  color: #fff;
+  font-size: 18px;
+}
+
+.error {
+  color: #ff5555;
+}
+
+@media (max-width: 768px) {
+  .playlist-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .playlist-image {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+  
+  .playlist-info h1 {
+    font-size: 36px;
+  }
+  
+  .track-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .track-artist {
+    margin: 5px 0;
+  }
+  
+  .track-duration {
+    margin-top: 5px;
+  }
+} 

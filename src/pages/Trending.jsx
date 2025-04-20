@@ -8,7 +8,6 @@ function Trending() {
   useEffect(() => {
     const fetchTrendingTracks = async () => {
       try {
-        // Simulated API call - replace with actual API integration
         const response = await new Promise(resolve => setTimeout(() => {
           resolve({
             tracks: [
@@ -30,7 +29,6 @@ function Trending() {
                 artist: 'Lizzo',
                 albumArt: 'https://picsum.photos/300/300?random=22',
               },
-              // Add more tracks as needed
             ]
           });
         }, 1000));

@@ -1,37 +1,85 @@
-// Spotify API configuration
-export const SPOTIFY_CONFIG = {
-  SPOTIFY_API_KEY: 'BQD8szn08KGtci0apSCy8wW9SmlQA1ZmKFUPPQ83uTVpbi5ho3S62c-3G48N8wCgTGx8GM9khkf6XngZ_U8I4FSF9FZF5vKONCYHDKPMKBXyUFJ1VpY1iL3qCqO-rNkfkeacE2_s5kgo2p6OVgdZdgSjNdEM2OicXyle5_pIiUjKbWFIJB5Dln8BuZ2cUfpo-oRVLzylct3le8_rtAS6cLGVSSvvXjSyszMITS1bxhW2JRS4Vgx-UpevGPK_F85oykdSXUtg9b_JHWjtGTi_Zx8J8gj9ZtJKcHKOs1CS4qov93bZRMeRkiu_Zcsb',
-  API_BASE_URL: 'https://api.spotify.com/v1',
-  SPOTIFY_CLIENT_ID: 'your_client_id_here',
-  SPOTIFY_CLIENT_SECRET: 'your_client_secret_here',
-  REDIRECT_URI: 'http://localhost:5173/callback'
+import { config } from '../config';
+
+const SPOTIFY_API_BASE = 'https://api.spotify.com/v1';
+
+const FALLBACK_IMAGES = {
+  album: 'https://via.placeholder.com/300/121212/FFFFFF?text=Album',
+  artist: 'https://via.placeholder.com/300/121212/FFFFFF?text=Artist',
+  playlist: 'https://via.placeholder.com/300/121212/FFFFFF?text=Playlist',
+  track: 'https://via.placeholder.com/300/121212/FFFFFF?text=Track'
 };
 
-const SPOTIFY_API_BASE = SPOTIFY_CONFIG.API_BASE_URL;
+const RATE_LIMIT = {
+  maxRetries: 3,
+  retryDelay: 2000, 
+  maxRequestsPerMinute: 30
+};
+
+let requestCount = 0;
+let lastResetTime = Date.now();
+
+const handleRateLimit = async () => {
+  const now = Date.now();
+  const timeSinceLastReset = now - lastResetTime;
+  
+  if (timeSinceLastReset > 60000) {
+    requestCount = 0;
+    lastResetTime = now;
+  }
+
+  if (requestCount >= RATE_LIMIT.maxRequestsPerMinute) {
+    const waitTime = 60000 - timeSinceLastReset;
+    console.log(`Rate limit reached. Waiting ${waitTime}ms before next request.`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+    requestCount = 0;
+    lastResetTime = Date.now();
+  }
+  
+  requestCount++;
+};
 
 export const spotifyService = {
   async fetchWebApi(endpoint, method = 'GET', body = null) {
-    try {
-      const res = await fetch(`${SPOTIFY_API_BASE}/${endpoint}`, {
-        headers: {
-          Authorization: `Bearer ${SPOTIFY_CONFIG.SPOTIFY_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        method,
-        body: body ? JSON.stringify(body) : null,
-      });
+    await handleRateLimit();
+    
+    let retries = 0;
+    while (retries < RATE_LIMIT.maxRetries) {
+      try {
+        const res = await fetch(`${SPOTIFY_API_BASE}/${endpoint}`, {
+          headers: {
+            Authorization: `Bearer ${config.SPOTIFY_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          method,
+          body: body ? JSON.stringify(body) : null,
+        });
 
-      if (!res.ok) {
-        if (res.status === 401) {
-          throw new Error('Authentication failed. Please check your Spotify API key.');
+        if (!res.ok) {
+          if (res.status === 401) {
+            throw new Error('Authentication failed. Please check your Spotify API key.');
+          }
+          if (res.status === 429) {
+            const retryAfter = parseInt(res.headers.get('Retry-After') || '5');
+            console.log(`Rate limit exceeded. Retrying after ${retryAfter} seconds.`);
+            await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+            retries++;
+            continue;
+          }
+          throw new Error(`HTTP error! status: ${res.status}`);
         }
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
 
-      return await res.json();
-    } catch (error) {
-      console.error(`Error fetching ${endpoint}:`, error);
-      throw error;
+        return await res.json();
+      } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+        retries++;
+        
+        if (retries < RATE_LIMIT.maxRetries) {
+          console.log(`Retrying (${retries}/${RATE_LIMIT.maxRetries})...`);
+          await new Promise(resolve => setTimeout(resolve, RATE_LIMIT.retryDelay));
+        } else {
+          throw error;
+        }
+      }
     }
   },
 
@@ -42,7 +90,9 @@ export const spotifyService = {
         id: album.id,
         name: album.name,
         artists: album.artists,
-        images: album.images
+        images: album.images && album.images.length > 0 
+          ? album.images 
+          : [{ url: FALLBACK_IMAGES.album }]
       }));
     } catch (error) {
       console.error('Error fetching new releases:', error);
@@ -52,44 +102,101 @@ export const spotifyService = {
 
   async getFeaturedPlaylists(limit = 20) {
     try {
-      const response = await this.fetchWebApi(`search?q=playlist&type=playlist&limit=${limit}`);
-      if (response && response.playlists && response.playlists.items) {
-        return response.playlists.items.filter(item => item !== null && item !== undefined);
+      const response = await this.fetchWebApi(
+        `search?q=playlist:2024&type=playlist&limit=${limit}`
+      );
+
+      if (!response || !response.playlists || !response.playlists.items) {
+        console.error('Invalid response format from search API');
+        return [];
       }
-      throw new Error('Invalid response structure from Spotify API');
+
+      return response.playlists.items
+        .filter(playlist => playlist && playlist.id && playlist.name)
+        .map(playlist => ({
+          id: playlist.id,
+          name: playlist.name,
+          description: playlist.description || `A curated playlist by ${playlist.owner?.display_name || 'Spotify'}`,
+          images: playlist.images && playlist.images.length > 0 
+            ? playlist.images 
+            : [{ url: FALLBACK_IMAGES.playlist }]
+        }));
     } catch (error) {
       console.error('Error fetching featured playlists:', error);
       return [];
     }
   },
 
-  async getTopArtists(limit = 20) {
+  async getTopArtists() {
     try {
-      const response = await this.fetchWebApi(`artists?ids=0TnOYISbd1XYRBk9myaseg,3HqSLMAZ3g3d5poNaI7GOU,06HL4z0CvFAxyc27GXpf02,1uNFoZAHBGtllmzznpCI3s,6eUKZXaKkcviH0Ku9w2n3V&market=US`);
-      return response.artists.slice(0, limit);
+      const response = await this.fetchWebApi(
+        'search?q=year:2024&type=artist&limit=20'
+      );
+      
+      if (!response?.artists?.items) {
+        console.error('Invalid response format from search:', response);
+        return [];
+      }
+
+      return response.artists.items.map(artist => ({
+        id: artist.id,
+        name: artist.name,
+        imageUrl: artist.images?.[0]?.url || FALLBACK_IMAGES.artist,
+        type: 'artist'
+      }));
     } catch (error) {
       console.error('Error fetching top artists:', error);
       return [];
     }
   },
 
-  async getArtistTopTracks(artistId, limit = 10) {
+  async getCategories() {
     try {
-      const response = await this.fetchWebApi(`artists/${artistId}/top-tracks?market=US`);
-      return response.tracks.slice(0, limit);
+      const response = await this.fetchWebApi('browse/categories?limit=20');
+      
+      if (!response?.categories?.items) {
+        console.error('Invalid response format for categories:', response);
+        return [];
+      }
+      
+      return response.categories.items.map(category => ({
+        id: category.id,
+        name: category.name,
+        imageUrl: category.icons?.[0]?.url || FALLBACK_IMAGES.playlist,
+        type: 'category'
+      }));
     } catch (error) {
-      console.error('Error fetching artist top tracks:', error);
+      console.error('Error fetching categories:', error);
       return [];
     }
   },
 
-  async searchTracks(query, limit = 20) {
+  async getPlaylistDetails(playlistId) {
     try {
-      const response = await this.fetchWebApi(`search?q=${encodeURIComponent(query)}&type=track&limit=${limit}`);
-      return response.tracks.items;
+      const response = await this.fetchWebApi(`playlists/${playlistId}`);
+      
+      if (!response || !response.id) {
+        console.error('Invalid response format for playlist details:', response);
+        return null;
+      }
+      
+      return {
+        id: response.id,
+        name: response.name,
+        description: response.description || 'A curated playlist',
+        imageUrl: response.images?.[0]?.url || FALLBACK_IMAGES.playlist,
+        tracks: response.tracks?.items?.map(item => ({
+          id: item.track.id,
+          name: item.track.name,
+          artist: item.track.artists.map(artist => artist.name).join(', '),
+          album: item.track.album.name,
+          duration: item.track.duration_ms,
+          imageUrl: item.track.album.images?.[0]?.url || FALLBACK_IMAGES.track
+        })) || []
+      };
     } catch (error) {
-      console.error('Error searching tracks:', error);
-      return [];
+      console.error('Error fetching playlist details:', error);
+      return null;
     }
   }
 }; 

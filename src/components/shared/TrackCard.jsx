@@ -8,7 +8,6 @@ function TrackCard({ track }) {
 
   const isLiked = likedSongs.some(song => song.id === track.id);
 
-  // Use a more reliable placeholder image service
   const getImageUrl = (track) => {
     if (!track.albumArt) {
       return `https://picsum.photos/300/300?random=${track.id}`;

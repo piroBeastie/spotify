@@ -2,10 +2,14 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 
 .section {
   margin-bottom: 40px;
+  width: 100%;
 }
 
 .section h2 {
@@ -16,48 +20,27 @@
 }
 
 .items-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
   gap: 24px;
+  padding-bottom: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #535353 #121212;
 }
 
-.item-card {
-  background: #181818;
-  padding: 16px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-  cursor: pointer;
+.items-grid::-webkit-scrollbar {
+  height: 8px;
 }
 
-.item-card:hover {
-  background: #282828;
-}
-
-.item-image {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
+.items-grid::-webkit-scrollbar-track {
+  background: #121212;
   border-radius: 4px;
-  margin-bottom: 16px;
 }
 
-.item-info h3 {
-  color: #fff;
-  font-size: 16px;
-  margin: 0 0 8px 0;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.item-info p {
-  color: #b3b3b3;
-  font-size: 14px;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.items-grid::-webkit-scrollbar-thumb {
+  background-color: #535353;
+  border-radius: 4px;
 }
 
 .loading {

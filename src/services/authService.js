@@ -1,4 +1,4 @@
-import { SPOTIFY_CONFIG } from './spotifyService';
+import { config } from '../config';
 
 const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
@@ -14,9 +14,9 @@ export const authService = {
     ];
 
     const params = new URLSearchParams({
-      client_id: SPOTIFY_CONFIG.SPOTIFY_CLIENT_ID,
+      client_id: config.SPOTIFY_CLIENT_ID,
       response_type: 'code',
-      redirect_uri: SPOTIFY_CONFIG.REDIRECT_URI,
+      redirect_uri: config.REDIRECT_URI,
       scope: scopes.join(' '),
     });
 
@@ -27,14 +27,14 @@ export const authService = {
     const params = new URLSearchParams({
       grant_type: 'authorization_code',
       code,
-      redirect_uri: SPOTIFY_CONFIG.REDIRECT_URI,
+      redirect_uri: config.REDIRECT_URI,
     });
 
     const response = await fetch(SPOTIFY_TOKEN_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${btoa(`${SPOTIFY_CONFIG.SPOTIFY_CLIENT_ID}:${SPOTIFY_CONFIG.SPOTIFY_CLIENT_SECRET}`)}`,
+        Authorization: `Basic ${btoa(`${config.SPOTIFY_CLIENT_ID}:${config.SPOTIFY_CLIENT_SECRET}`)}`,
       },
       body: params,
     });
@@ -66,7 +66,7 @@ export const authService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${btoa(`${SPOTIFY_CONFIG.SPOTIFY_CLIENT_ID}:${SPOTIFY_CONFIG.SPOTIFY_CLIENT_SECRET}`)}`,
+        Authorization: `Basic ${btoa(`${config.SPOTIFY_CLIENT_ID}:${config.SPOTIFY_CLIENT_SECRET}`)}`,
       },
       body: params,
     });

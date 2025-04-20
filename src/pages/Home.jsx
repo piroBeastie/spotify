@@ -51,31 +51,28 @@ export default function Home() {
     );
   }
 
-  const renderSection = (title, items, type) => {
-    // Filter out any null or undefined items
-    const validItems = items.filter(item => item !== null && item !== undefined);
-    
-    return (
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold text-white mb-6">{title}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {validItems.map((item) => (
-            <TrackCard
-              key={item.id}
-              id={item.id}
-              title={item.name}
-              artist={type === 'artist' 
-                ? item.genres?.join(', ') || 'Unknown Genre'
-                : item.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist'}
-              coverUrl={type === 'artist' 
-                ? item.images?.[0]?.url 
-                : item.album?.images?.[0]?.url || item.images?.[0]?.url}
-            />
-          ))}
-        </div>
+  const renderSection = (title, items, type) => (
+    <div className="mb-12">
+      <h2 className="text-2xl font-bold text-white mb-6">{title}</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {items.map((item) => (
+          <TrackCard
+            key={item.id}
+            id={item.id}
+            title={item.name}
+            artist={type === 'artist' 
+              ? item.genres?.join(', ') || 'Artist'
+              : item.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist'}
+            coverUrl={type === 'artist' 
+              ? (item.imageUrl || (item.images && item.images[0]?.url) || 'https://i.scdn.co/image/ab6761610000e5eb4293385d324db8558179afd9')
+              : (item.album?.images && item.album?.images[0]?.url) || (item.images && item.images[0]?.url) || 'https://i.scdn.co/image/ab6761610000e5eb4293385d324db8558179afd9'}
+            type={type}
+            artistId={type === 'artist' ? item.id : null}
+          />
+        ))}
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
