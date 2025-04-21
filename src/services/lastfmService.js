@@ -149,29 +149,63 @@ export const lastfmService = {
     }
   },
 
-  async searchTracks(query, limit = 5) {
+  async searchTracks(query) {
     try {
-      const response = await this.fetchWebApi('track.search', { 
+      const response = await this.fetchWebApi('track.search', {
         track: query,
-        limit 
+        limit: 20
       });
-      
-      if (!response?.results?.trackmatches?.track) {
+
+      if (response.error) {
+        console.warn('Error in search response:', response.error);
         return [];
       }
 
-      const tracks = response.results.trackmatches.track;
-      const tracksArray = Array.isArray(tracks) ? tracks : [tracks];
-      
-      return tracksArray.map(track => ({
-        id: track.mbid || track.name,
-        name: track.name,
-        artists: [{ name: track.artist }],
-        album: {
-          name: track.name,
-          images: [{ url: track.image?.[3]?.['#text'] || null }]
+      const tracks = response.results?.trackmatches?.track || [];
+      const formattedTracks = [];
+
+      for (const track of tracks) {
+        try {
+          const trackInfo = await this.fetchWebApi('track.getInfo', {
+            artist: track.artist,
+            track: track.name
+          });
+
+          if (trackInfo.error) {
+            console.warn(`Error fetching track info for ${track.name}:`, trackInfo.error);
+            continue;
+          }
+
+          const album = trackInfo.track?.album;
+          const albumImage = album?.image?.[3]?.['#text'] || album?.image?.[2]?.['#text'] || album?.image?.[1]?.['#text'] || album?.image?.[0]?.['#text'];
+
+          formattedTracks.push({
+            id: track.mbid || track.name,
+            name: track.name,
+            artists: [{ name: track.artist }],
+            album: {
+              name: album?.title || track.name,
+              images: [{ url: albumImage || null }]
+            },
+            duration_ms: trackInfo.track?.duration ? trackInfo.track.duration * 1000 : 0
+          });
+        } catch (error) {
+          console.warn(`Error processing track ${track.name}:`, error);
+          // Add track with minimal info if processing fails
+          formattedTracks.push({
+            id: track.mbid || track.name,
+            name: track.name,
+            artists: [{ name: track.artist }],
+            album: {
+              name: track.name,
+              images: [{ url: null }]
+            },
+            duration_ms: 0
+          });
         }
-      }));
+      }
+
+      return formattedTracks;
     } catch (error) {
       console.error('Error in searchTracks:', error);
       return [];

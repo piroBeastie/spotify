@@ -15,9 +15,10 @@ export default function Search() {
     try {
       setLoading(true);
       setError(null);
-      const searchResults = await lastfmService.searchTracks(searchQuery, 5);
+      setTracks([]);
       
-      const validatedTracks = searchResults.map(track => ({
+      const results = await lastfmService.searchTracks(searchQuery);
+      const formattedTracks = results.map(track => ({
         id: track.id || track.name,
         name: track.name,
         artists: track.artists || [{ name: 'Unknown Artist' }],
@@ -27,10 +28,10 @@ export default function Search() {
         }
       }));
       
-      setTracks(validatedTracks);
-    } catch (error) {
-      console.error('Error searching tracks:', error);
+      setTracks(formattedTracks);
+    } catch (err) {
       setError('Failed to search tracks. Please try again.');
+      console.error('Search error:', err);
     } finally {
       setLoading(false);
     }
