@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { spotifyService } from '../services/spotifyService';
+import { lastfmService } from '../services/lastfmService';
 import './ArtistDetails.css';
 
 const ArtistDetails = () => {
@@ -13,56 +13,42 @@ const ArtistDetails = () => {
 
   useEffect(() => {
     const fetchArtistDetails = async () => {
+      if (!artistId) {
+        setError('Artist ID is required');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await spotifyService.fetchWebApi(`artists/${artistId}`);
-        
-        if (!response || !response.id) {
+        const [artistData, tracksData] = await Promise.all([
+          lastfmService.getArtistDetails(artistId),
+          lastfmService.getArtistTopTracks(artistId)
+        ]);
+
+        if (!artistData) {
           throw new Error('Artist not found');
         }
-        
-        setArtist({
-          id: response.id,
-          name: response.name,
-          imageUrl: response.images?.[0]?.url || 'https://via.placeholder.com/300/121212/FFFFFF?text=Artist',
-          type: 'artist',
-          genres: response.genres || [],
-          popularity: response.popularity || 0,
-          followers: response.followers?.total || 0
-        });
-        
-        // Get artist top tracks
-        const tracksResponse = await spotifyService.fetchWebApi(`artists/${artistId}/top-tracks?market=US`);
-        
-        if (tracksResponse && tracksResponse.tracks) {
-          setTracks(tracksResponse.tracks.map(track => ({
-            id: track.id,
-            name: track.name,
-            duration_ms: track.duration_ms,
-            album: {
-              id: track.album.id,
-              name: track.album.name,
-              imageUrl: track.album.images?.[0]?.url || 'https://via.placeholder.com/300/121212/FFFFFF?text=Album'
-            },
-            artists: track.artists.map(artist => ({
-              id: artist.id,
-              name: artist.name
-            }))
-          })));
+
+        if (artistData.bio) {
+          artistData.bio = artistData.bio
+            .replace(/<a[^>]*>([^<]*)<\/a>/g, '$1') 
+            .replace(/<[^>]+>/g, '')
+            .trim();
         }
+
+        setArtist(artistData);
+        setTracks(tracksData);
       } catch (err) {
         console.error('Error fetching artist details:', err);
-        setError('Failed to load artist details. Please try again later.');
+        setError(err.message || 'Failed to load artist details');
       } finally {
         setLoading(false);
       }
     };
 
-    if (artistId) {
-      fetchArtistDetails();
-    }
+    fetchArtistDetails();
   }, [artistId]);
 
   const handleBack = () => {
@@ -72,7 +58,7 @@ const ArtistDetails = () => {
   if (loading) {
     return (
       <div className="artist-details-container">
-        <div className="loading">Loading artist details...</div>
+        <div className="loading">Loading...</div>
       </div>
     );
   }
@@ -80,8 +66,10 @@ const ArtistDetails = () => {
   if (error) {
     return (
       <div className="artist-details-container">
+        <button className="back-button" onClick={handleBack}>
+          ← Back
+        </button>
         <div className="error">{error}</div>
-        <button className="back-button" onClick={handleBack}>Go Back</button>
       </div>
     );
   }
@@ -89,55 +77,63 @@ const ArtistDetails = () => {
   if (!artist) {
     return (
       <div className="artist-details-container">
+        <button className="back-button" onClick={handleBack}>
+          ← Back
+        </button>
         <div className="error">Artist not found</div>
-        <button className="back-button" onClick={handleBack}>Go Back</button>
       </div>
     );
   }
 
   return (
     <div className="artist-details-container">
-      <button className="back-button" onClick={handleBack}>← Back</button>
-      
+      <button className="back-button" onClick={handleBack}>
+        ← Back
+      </button>
+
       <div className="artist-header">
         <div className="artist-image">
-          <img 
-            src={artist.imageUrl} 
-            alt={artist.name} 
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = 'https://via.placeholder.com/300/121212/FFFFFF?text=Artist';
-            }}
-          />
+          <img src={artist.image} alt={artist.name} onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = `https://via.placeholder.com/300x300/1db954/ffffff?text=${encodeURIComponent(artist.name)}`;
+          }} />
         </div>
         <div className="artist-info">
           <h1>{artist.name}</h1>
-          <p className="artist-type">Artist</p>
           {artist.genres && artist.genres.length > 0 && (
-            <p className="artist-genres">{artist.genres.join(', ')}</p>
+            <div className="artist-genres">
+              {artist.genres.map((genre, index) => (
+                <span key={index} className="genre-tag">{genre}</span>
+              ))}
+            </div>
           )}
-          <p className="artist-followers">{artist.followers.toLocaleString()} followers</p>
+          {artist.bio && (
+            <div className="artist-bio">
+              <h3>About</h3>
+              <p>{artist.bio}</p>
+            </div>
+          )}
         </div>
       </div>
-      
+
       <div className="tracks-section">
-        <h2>Popular Tracks</h2>
+        <h2>Top Tracks</h2>
         {tracks.length > 0 ? (
-          <ul className="tracks-list">
+          <div className="tracks-list">
             {tracks.map((track, index) => (
-              <li key={track.id} className="track-item">
+              <div key={track.id} className="track-item">
                 <div className="track-number">{index + 1}</div>
                 <div className="track-info">
                   <div className="track-name">{track.name}</div>
-                  <div className="track-duration">
-                    {Math.floor(track.duration_ms / 60000)}:{(track.duration_ms % 60000 / 1000).toFixed(0).padStart(2, '0')}
-                  </div>
+                  <div className="track-artist">{track.artists?.[0]?.name || artist.name}</div>
                 </div>
-              </li>
+                <div className="track-album">{track.album?.name || 'Unknown Album'}</div>
+                <div className="track-duration">{track.duration}</div>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p>No tracks found</p>
+          <div className="no-tracks">No tracks found</div>
         )}
       </div>
     </div>

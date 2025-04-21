@@ -8,31 +8,32 @@
   background: none;
   border: none;
   color: #fff;
-  font-size: 16px;
+  font-size: 24px;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
   margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  transition: color 0.2s;
 }
 
 .back-button:hover {
-  color: #1db954;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .artist-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 30px;
+  gap: 30px;
 }
 
 .artist-image {
-  width: 200px;
-  height: 200px;
+  width: 300px;
+  height: 300px;
   border-radius: 50%;
   overflow: hidden;
-  margin-right: 30px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
 }
 
 .artist-image img {
@@ -41,21 +42,52 @@
   object-fit: cover;
 }
 
+.artist-info {
+  flex: 1;
+}
+
 .artist-info h1 {
   font-size: 48px;
   margin: 0 0 10px 0;
   color: #fff;
 }
 
-.artist-type {
-  font-size: 16px;
+.artist-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.genre-tag {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #fff;
+  cursor: default;
+}
+
+.artist-bio {
+  margin-top: 20px;
+}
+
+.artist-bio h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.artist-bio p {
   color: #b3b3b3;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  line-height: 1.5;
 }
 
 .tracks-section {
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
 .tracks-section h2 {
@@ -65,70 +97,102 @@
 }
 
 .tracks-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .track-item {
   display: flex;
   align-items: center;
-  padding: 15px;
-  border-bottom: 1px solid #282828;
-  transition: background-color 0.2s;
+  padding: 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .track-item:hover {
-  background-color: #282828;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .track-number {
   width: 40px;
-  color: #b3b3b3;
-  font-size: 16px;
   text-align: center;
+  color: #b3b3b3;
+  font-size: 14px;
 }
 
 .track-info {
-  display: flex;
-  justify-content: space-between;
   flex: 1;
-  align-items: center;
+  margin: 0 20px;
 }
 
 .track-name {
   color: #fff;
   font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.track-artist {
+  color: #b3b3b3;
+  font-size: 14px;
+}
+
+.track-album {
+  color: #b3b3b3;
+  font-size: 14px;
+  margin: 0 20px;
 }
 
 .track-duration {
   color: #b3b3b3;
   font-size: 14px;
-}
-
-.loading, .error, .no-tracks {
-  text-align: center;
-  padding: 50px;
-  color: #fff;
-  font-size: 18px;
-}
-
-.error {
-  color: #ff5555;
+  width: 60px;
+  text-align: right;
 }
 
 @media (max-width: 768px) {
   .artist-header {
     flex-direction: column;
+    align-items: center;
     text-align: center;
   }
-  
+
   .artist-image {
-    margin-right: 0;
-    margin-bottom: 20px;
+    width: 200px;
+    height: 200px;
+    margin: 0 0 20px 0;
   }
-  
+
   .artist-info h1 {
     font-size: 36px;
+  }
+
+  .artist-genres {
+    justify-content: center;
+  }
+
+  .track-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .track-number {
+    display: none;
+  }
+
+  .track-info {
+    margin: 0;
+  }
+
+  .track-album {
+    margin: 0;
+  }
+
+  .track-duration {
+    width: auto;
+    text-align: left;
   }
 } 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import TrackCard from '../components/TrackCard';
-import { spotifyService } from '../services/spotifyService';
+import { lastfmService } from '../services/lastfmService';
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,8 +15,33 @@ export default function Search() {
     try {
       setLoading(true);
       setError(null);
-      const searchResults = await spotifyService.searchTracks(searchQuery);
-      setTracks(searchResults);
+      const searchResults = await lastfmService.searchTracks(searchQuery, 5);
+      
+      // Validate track data
+      const validatedTracks = searchResults.map(track => {
+        const trackData = {
+          id: track.id || track.name,
+          name: track.name || 'Unknown Track',
+          artists: track.artists || [{ name: 'Unknown Artist' }],
+          album: {
+            name: track.album?.name || track.name,
+            images: track.album?.images || [{ url: null }]
+          }
+        };
+        
+        // Check if the image URL is valid
+        const imageUrl = trackData.album.images[0].url;
+        if (!imageUrl || imageUrl === '') {
+          console.log(`Track "${trackData.name}" has no image URL, will use placeholder`);
+        } else {
+          console.log(`Track "${trackData.name}" image URL:`, imageUrl);
+        }
+        
+        return trackData;
+      });
+      
+      console.log('Final tracks data:', validatedTracks);
+      setTracks(validatedTracks);
     } catch (error) {
       console.error('Error searching tracks:', error);
       setError('Failed to search tracks. Please try again.');
@@ -67,8 +92,9 @@ export default function Search() {
                 key={track.id}
                 id={track.id}
                 title={track.name}
-                artist={track.artists.map(artist => artist.name).join(', ')}
-                coverUrl={track.album.images[0]?.url}
+                artist={track.artists[0].name}
+                coverUrl={track.album.images[0].url}
+                type="track"
               />
             ))}
           </div>
