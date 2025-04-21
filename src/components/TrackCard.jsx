@@ -1,15 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function TrackCard({ id, title, artist, coverUrl, type, artistId }) {
+export default function TrackCard({ id, title, artist, coverUrl, type, artistId, album }) {
   const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
-
-  // Handle image loading error
-  const handleImageError = () => {
-    console.log(`Image error for track: ${title}, URL: ${coverUrl}`);
-    setImageError(true);
-  };
 
   const handleClick = () => {
     if (type === 'playlist') {
@@ -17,25 +11,10 @@ export default function TrackCard({ id, title, artist, coverUrl, type, artistId 
     } else if (type === 'artist') {
       navigate(`/artist/${artistId || id}`);
     } else if (type === 'album') {
-      console.log(`Album clicked: ${id}`);
+      navigate(`/album/${encodeURIComponent(artist)}/${encodeURIComponent(id)}`);
+    } else if (type === 'track' && album?.name) {
+      navigate(`/album/${encodeURIComponent(artist)}/${encodeURIComponent(album.name)}`);
     }
-  };
-
-  const renderPlaceholder = () => {
-    return (
-      <div 
-        className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-300 font-bold text-center"
-        style={{ 
-          aspectRatio: '1/1',
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
-        }}
-      >
-        <div className="flex flex-col items-center justify-center p-2">
-          <span className="text-xl mb-1">🎵</span>
-          <span className="text-xs px-1">{title || 'Unknown Track'}</span>
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -45,13 +24,24 @@ export default function TrackCard({ id, title, artist, coverUrl, type, artistId 
     >
       <div className="aspect-square">
         {imageError || !coverUrl ? (
-          renderPlaceholder()
+          <div 
+            className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-300 font-bold text-center"
+            style={{ 
+              aspectRatio: '1/1',
+              background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+            }}
+          >
+            <div className="flex flex-col items-center justify-center p-2">
+              <span className="text-xl mb-1">🎵</span>
+              <span className="text-xs px-1">{title || 'Unknown Track'}</span>
+            </div>
+          </div>
         ) : (
           <img
             src={coverUrl}
             alt={title}
             className="w-full h-full object-cover"
-            onError={handleImageError}
+            onError={() => setImageError(true)}
           />
         )}
       </div>
