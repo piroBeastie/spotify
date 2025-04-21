@@ -2,11 +2,6 @@ import { config } from '../config';
 
 const LASTFM_API_BASE = 'https://ws.audioscrobbler.com/2.0/';
 
-const getPlaceholderImage = (text, color = '1DB954') => {
-  const encodedText = encodeURIComponent(text || 'Unknown');
-  return `https://dummyimage.com/300x300/${color}/ffffff&text=${encodedText}`;
-};
-
 export const lastfmService = {
   async fetchWebApi(method, params = {}) {
     try {
